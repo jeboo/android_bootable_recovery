@@ -1681,6 +1681,7 @@ int verify_root_and_recovery() {
     ui_set_showing_back_button(0);
 
     int ret = 0;
+/*
     struct stat st;
     // check to see if install-recovery.sh is going to clobber recovery
     // install-recovery.sh is also used to run the su daemon on stock rom for 4.3+
@@ -1733,7 +1734,7 @@ int verify_root_and_recovery() {
             __system("/sbin/install-su.sh");
         }
     }
-
+*/
     ensure_path_unmounted("/system");
     ui_set_showing_back_button(old_val);
     return ret;
