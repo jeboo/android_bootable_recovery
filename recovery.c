@@ -522,7 +522,7 @@ copy_sideloaded_package(const char* original_path) {
 
 static const char**
 prepend_title(const char** headers) {
-    const char* title[] = { EXPAND(RECOVERY_VERSION),
+    const char* title[] = { "Jeboo Recovery v2.1",
                       "",
                       NULL };
 
