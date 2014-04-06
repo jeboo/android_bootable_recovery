@@ -945,6 +945,49 @@ static struct vold_callbacks v_callbacks = {
     .disk_removed = handle_volume_hotswap,
 };
 
+void fixtime() {
+	FILE *f;
+	uint64_t offset = 0;
+	struct timeval tv;
+
+	// Don't fix the time of it already is over year 2000, it is likely already okay, either
+	// because the RTC is fine or because the recovery already set it and then crashed
+	gettimeofday(&tv, NULL);
+	if(tv.tv_sec > 946684800) // timestamp of 2000-01-01 00:00:00
+	{
+		LOGE("Not fixing time, it seems to be already okay (after year 2000).\n");
+		return;
+	}
+
+	f = fopen("/data/time/ats_2", "r");
+	if(!f)
+	{
+		LOGE("Failed to open time fix file");
+		return;
+	}
+
+	if(fread(&offset, sizeof(offset), 1, f) != 1)
+	{
+		LOGE("Failed load uint64 from time fix file");
+		fclose(f);
+		return;
+	}
+	fclose(f);
+
+	gettimeofday(&tv, NULL);
+
+	tv.tv_sec += offset/1000;
+	tv.tv_usec += (offset%1000)*1000;
+
+	while(tv.tv_usec >= 1000000)
+	{
+		++tv.tv_sec;
+		tv.tv_usec -= 1000000;
+	}
+
+	settimeofday(&tv, NULL);
+}
+
 int
 main(int argc, char **argv) {
 
@@ -1018,6 +1061,15 @@ main(int argc, char **argv) {
     vold_client_start(&v_callbacks, 0);
     vold_set_automount(1);
     setup_legacy_storage_paths();
+
+    // Fix time
+    if (ensure_path_mounted("/data") == 0) {
+	fixtime();
+	ignore_data_media_workaround(1);
+	ensure_path_unmounted("/data");
+	ignore_data_media_workaround(0);
+    }
+
     LOGI("Processing arguments.\n");
     ensure_path_mounted(LAST_LOG_FILE);
     rotate_last_logs(10);
