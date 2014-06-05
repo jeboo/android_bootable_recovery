@@ -1066,9 +1066,9 @@ main(int argc, char **argv) {
     // Fix time
     if (ensure_path_mounted("/data") == 0) {
 	fixtime();
-	ignore_data_media_workaround(1);
+	preserve_data_media(0);
 	ensure_path_unmounted("/data");
-	ignore_data_media_workaround(0);
+	preserve_data_media(1);
     }
 
     LOGI("Processing arguments.\n");
